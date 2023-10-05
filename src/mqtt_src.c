@@ -121,8 +121,13 @@ static void* mqtt_source_reader_task(void* arg) {
 
         conn_opts.keepAliveInterval = 20;
         conn_opts.cleansession = 1;
-        conn_opts.username = cfg->username;
-        conn_opts.password = cfg->password;
+
+        if (cfg->username != NULL)
+        {
+            conn_opts.username = cfg->username;
+            conn_opts.password = cfg->password;
+        }
+        
         conn_opts.MQTTVersion = 0;
 
         MQTTClient_setCallbacks(client, (void*) q, connectionLost, msgarrvd, delivered);

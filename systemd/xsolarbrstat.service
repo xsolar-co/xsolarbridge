@@ -4,7 +4,7 @@ Description=XSolar Bridge Deamon
 After=network.target
 
 [Service]
-ExecStart=/usr/local/xsolar/bin/xsolarbridge -c /usr/local/xsolar/etc/brconfig.cfg
+ExecStart=/usr/local/xsolar/bin/xsolarbridgest -c /usr/local/xsolar/etc/brconfigst.cfg
 Restart=always
 
 [Install]

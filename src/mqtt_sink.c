@@ -108,8 +108,13 @@ void* mqtt_sink_task(void* arg) {
 
         conn_opts.keepAliveInterval = 20;
         conn_opts.cleansession = 1;
-        // conn_opts.username = cfg->username;
-        // conn_opts.password = cfg->password;
+
+        if (cfg->username != NULL)
+        {
+            conn_opts.username = cfg->username;
+            conn_opts.password = cfg->password;
+        }
+        
         conn_opts.connectTimeout = 5; // 5 seconds
         // conn_opts.MQTTVersion = 3;
 
@@ -143,7 +148,7 @@ void* mqtt_sink_task(void* arg) {
                 pubmsg.payload = data->data;
                 pubmsg.payloadlen = data->datalen;
 
-                pubmsg.qos = 1;
+                pubmsg.qos = 0;
                 pubmsg.retained = 0;
 
                 char target_topic[256];
@@ -159,7 +164,7 @@ void* mqtt_sink_task(void* arg) {
                 printf("RC code =%d, Token %d\n", rc, token);
                 #endif // DEBUG
 
-                MQTTClient_waitForCompletion(client, token, 1000);
+                // MQTTClient_waitForCompletion(client, token, 1000);
 
                 free_message(data);
             }
