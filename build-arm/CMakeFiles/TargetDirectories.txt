@@ -1,3 +1,0 @@
-/home/longdh/xsolar/cworking/github/xsolarbridge/build-arm/CMakeFiles/xsolarbridge.dir
-/home/longdh/xsolar/cworking/github/xsolarbridge/build-arm/CMakeFiles/edit_cache.dir
-/home/longdh/xsolar/cworking/github/xsolarbridge/build-arm/CMakeFiles/rebuild_cache.dir
