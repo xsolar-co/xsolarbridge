@@ -14,6 +14,7 @@
 #include <pthread.h>
 
 #include "MQTTClient.h"
+#include "datalog.h"
 #include "mqtt_src.h"
 #include "squeue.h"
 #include "error.h"
@@ -50,24 +51,26 @@ static void delivered(void* context, MQTTClient_deliveryToken dt) {
  * @param message 
  * @return int 
  */
-static int msgarrvd(void* context, char* topicName, int topicLen, MQTTClient_message* message) {
-    char* payloadptr = message->payload;
-    int len = message->payloadlen;
-    int i = 0;
-    Channel *c = (Channel*) context;
-    
-    #ifdef DEBUG
-    // Assuming message is in JSON format
-    printf("Received message %d: %s: %s\n",len, topicName, payloadptr);
-    #endif // DEBUG    
+static int msgarrvd(void* context, char* topicName, int topicLen, MQTTClient_message* message) 
+{
+    struct Message* msg = create_message(topicName, NULL, message->payload, message->payloadlen);
 
-    // send to queue
-    for (i=0; i< c->total; i++) {
-        enqueue( c->queue[i], payloadptr);
+    if (msg)
+    {
+        int i = 0;
+        Queue *q = (Queue*) context;
+        
+        #ifdef DEBUG
+        // printf("Received message %d: %s: %s\n",len, topicName, payloadptr);
+        #endif // DEBUG    
+
+        // send to queue
+        enqueue( q, (void*) msg);
+        
+
+        MQTTClient_freeMessage(&message);
+        MQTTClient_free(topicName);
     }
-
-    MQTTClient_freeMessage(&message);
-    MQTTClient_free(topicName);
 
     return 1;
 }
@@ -97,7 +100,7 @@ static void* mqtt_source_reader_task(void* arg) {
 
     MQTTClient client;    
     int rc;
-    Channel *c = (Channel*) cfg->c;
+    Queue *q = (Queue*) cfg->q;
 
 
     char mqtt_addr[256];
@@ -122,7 +125,7 @@ static void* mqtt_source_reader_task(void* arg) {
         // conn_opts.password = cfg->password;
         conn_opts.MQTTVersion = 0;
 
-        MQTTClient_setCallbacks(client, (void*) c, connectionLost, msgarrvd, delivered);
+        MQTTClient_setCallbacks(client, (void*) q, connectionLost, msgarrvd, delivered);
 
         if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS) 
         {
@@ -160,11 +163,11 @@ static void* mqtt_source_reader_task(void* arg) {
  * @param password 
  * @return int 
  */
-int mqtt_source_init(mqtt_source_config* cfg, Channel *c, const char* host, int port, const char* username, const char* password, const char* client_id, const char* topic)
+int mqtt_source_init(mqtt_source_config* cfg, Queue *q, const char* host, int port, const char* username, const char* password, const char* client_id, const char* topic)
 {
     memset(cfg, 0, sizeof (mqtt_source_config));
 
-    cfg->c = c;
+    cfg->q = q;
 
     if (host != NULL)
         cfg->host = strdup(host);

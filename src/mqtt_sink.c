@@ -20,6 +20,7 @@
 #include "mqtt_sink.h"
 #include "MQTTClient.h"
 #include "error.h"
+#include "datalog.h"
 
 //FIXME
 extern char* strdup(const char*);
@@ -75,7 +76,6 @@ void* mqtt_sink_task(void* arg) {
     }
 
     Queue* q = (Queue*) cfg->q;
-    char data[MAX_QUEUE_DATA_SIZE];
 
     if (q == NULL)
     {
@@ -87,7 +87,7 @@ void* mqtt_sink_task(void* arg) {
     }
 
     char mqtt_addr[256];
-    sprintf(mqtt_addr, "mqtt://%s:%d", cfg->host, cfg->port);
+    sprintf(mqtt_addr, "tcp://%s:%d", cfg->host, cfg->port);
     #ifdef DEBUG
     printf("connect to %s\n", mqtt_addr);
     #endif // DEBUG
@@ -131,22 +131,30 @@ void* mqtt_sink_task(void* arg) {
         _connected = 1;
 
     
-        while (_connected) {
-            if (wait_dequeue(q, data))
+        while (_connected) 
+        {
+            struct Message* data;
+
+            if (wait_dequeue(q, (void**) &data))
             {
                 #ifdef DEBUG
-                printf("%s\n", data);
+                // printf("%s\n", data);
                 #endif // DEBUG
 
                 MQTTClient_message pubmsg = MQTTClient_message_initializer;
                 MQTTClient_deliveryToken token;
 
-                pubmsg.payload = data;
-                pubmsg.payloadlen = strlen(data);
+                pubmsg.payload = data->data;
+                pubmsg.payloadlen = data->datalen;
+
                 pubmsg.qos = 0;
                 pubmsg.retained = 0;
 
-                MQTTClient_publishMessage(client, cfg->topic, &pubmsg, &token);
+                char target_topic[256];
+                memset(target_topic, 0, sizeof(target_topic));
+                sprintf(target_topic, "%s", data->source_topic);
+
+                MQTTClient_publishMessage(client, target_topic, &pubmsg, &token);
                 // MQTTClient_waitForCompletion(client, token, 1000);
             }
         }

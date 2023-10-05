@@ -11,7 +11,7 @@
 #define MAX_QUEUE_DATA_SIZE     2048
 
 typedef struct {
-    char data[MAX_QUEUE_SIZE][MAX_QUEUE_DATA_SIZE];
+    void* data[MAX_QUEUE_SIZE];
     int front;
     int rear;
     pthread_mutex_t lock;
@@ -26,12 +26,12 @@ typedef struct {
 
 } Channel;
 
-void initQueue(Queue* q);
-int isEmpty(Queue* q);
-int isFull(Queue* q);
-void enqueue(Queue* q, const char* data);
-int dequeue(Queue* q, char* data);
-int wait_dequeue(Queue* q, char* data);
+void init_queue(Queue* q);
+int is_empty(Queue* q);
+int is_full(Queue* q);
+void enqueue(Queue* q, void* data);
+int dequeue(Queue* q, void** data);
+int wait_dequeue(Queue* q, void** data);
 
 int initChannel(Channel* c, int size);
 
