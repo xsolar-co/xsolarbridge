@@ -61,7 +61,7 @@ static int msgarrvd(void* context, char* topicName, int topicLen, MQTTClient_mes
         Queue *q = (Queue*) context;
         
         #ifdef DEBUG
-        // printf("Received message %d: %s: %s\n",len, topicName, payloadptr);
+        printf("Received message at tpoic %s: %s\n", topicName, (char*) message->payload);
         #endif // DEBUG    
 
         // send to queue
@@ -121,8 +121,8 @@ static void* mqtt_source_reader_task(void* arg) {
 
         conn_opts.keepAliveInterval = 20;
         conn_opts.cleansession = 1;
-        // conn_opts.username = cfg->username;
-        // conn_opts.password = cfg->password;
+        conn_opts.username = cfg->username;
+        conn_opts.password = cfg->password;
         conn_opts.MQTTVersion = 0;
 
         MQTTClient_setCallbacks(client, (void*) q, connectionLost, msgarrvd, delivered);

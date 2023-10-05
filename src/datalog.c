@@ -48,6 +48,8 @@ struct Message* create_message(const char* source_topic, const char* target_topi
     {
         msg->data = malloc(datalen);
         memcpy(msg->data, data, datalen);
+
+        msg->datalen = datalen;
     }
 
     return msg;

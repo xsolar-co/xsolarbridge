@@ -75,7 +75,7 @@ int wait_dequeue(Queue* q, void** data)
         pthread_cond_wait(&q->not_empty, &q->lock);
    
     
-    data = q->data[q->front];
+    *data = q->data[q->front];
 
     if (q->front == q->rear) 
     {

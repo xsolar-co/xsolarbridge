@@ -34,7 +34,8 @@ volatile int _connected = 0;
  * @param context 
  * @param cause 
  */
-static void connectionLost(void* context, char* cause) {
+static void connectionLost(void* context, char* cause) 
+{
     #ifdef DEBUG
     printf("Connection lost, cause: %s\n", cause);
     #endif // DEBUG
@@ -89,7 +90,7 @@ void* mqtt_sink_task(void* arg) {
     char mqtt_addr[256];
     sprintf(mqtt_addr, "tcp://%s:%d", cfg->host, cfg->port);
     #ifdef DEBUG
-    printf("connect to %s\n", mqtt_addr);
+    printf("sink connect to %s\n", mqtt_addr);
     #endif // DEBUG
 
     while(1)
@@ -98,7 +99,7 @@ void* mqtt_sink_task(void* arg) {
         MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
         int rc;
         
-        if (MQTTCLIENT_SUCCESS != (rc = MQTTClient_create(&client, mqtt_addr, cfg->client_id, MQTTCLIENT_PERSISTENCE_DEFAULT, NULL)))
+        if (MQTTCLIENT_SUCCESS != (rc = MQTTClient_create(&client, mqtt_addr, cfg->client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL)))
         {
             printf("Create ClientSink Error, code = %d\n", rc);
             exit(ESVRERR);
@@ -107,13 +108,12 @@ void* mqtt_sink_task(void* arg) {
 
         conn_opts.keepAliveInterval = 20;
         conn_opts.cleansession = 1;
-        conn_opts.username = cfg->username;
-        conn_opts.password = cfg->password;
+        // conn_opts.username = cfg->username;
+        // conn_opts.password = cfg->password;
         conn_opts.connectTimeout = 5; // 5 seconds
         // conn_opts.MQTTVersion = 3;
 
-        MQTTClient_setCallbacks(client, NULL, connectionLost, NULL, NULL);
-
+        MQTTClient_setCallbacks(client, NULL, connectionLost, NULL, delivered);
 
         if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS) 
         {
@@ -137,25 +137,31 @@ void* mqtt_sink_task(void* arg) {
 
             if (wait_dequeue(q, (void**) &data))
             {
-                #ifdef DEBUG
-                // printf("%s\n", data);
-                #endif // DEBUG
-
                 MQTTClient_message pubmsg = MQTTClient_message_initializer;
                 MQTTClient_deliveryToken token;
 
                 pubmsg.payload = data->data;
                 pubmsg.payloadlen = data->datalen;
 
-                pubmsg.qos = 0;
+                pubmsg.qos = 1;
                 pubmsg.retained = 0;
 
                 char target_topic[256];
                 memset(target_topic, 0, sizeof(target_topic));
                 sprintf(target_topic, "%s", data->source_topic);
 
-                MQTTClient_publishMessage(client, target_topic, &pubmsg, &token);
-                // MQTTClient_waitForCompletion(client, token, 1000);
+                #ifdef DEBUG
+                printf("publish to %s: %s, len = %d\n", target_topic, (char*) pubmsg.payload, pubmsg.payloadlen);
+                #endif // DEBUG
+
+                rc = MQTTClient_publishMessage(client, target_topic, &pubmsg, &token);
+                #ifdef DEBUG
+                printf("RC code =%d, Token %d\n", rc, token);
+                #endif // DEBUG
+
+                MQTTClient_waitForCompletion(client, token, 1000);
+
+                free_message(data);
             }
         }
 
