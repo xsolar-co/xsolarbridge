@@ -9,19 +9,22 @@
 static FILE* log_file = NULL;
 static pthread_mutex_t logLock = PTHREAD_MUTEX_INITIALIZER;
 
-void init_logger(const char* logFilePath) {
-    log_file = fopen(logFilePath, "a");
+void init_logger(const char* logFilePath) 
+{
+    log_file = fopen(logFilePath, "w");
     if (!log_file) {
         perror("Error opening log file");
         exit(EXIT_FAILURE);
     }
 }
 
-void cleanup_logger() {
+void cleanup_logger() 
+{
     fclose(log_file);
 }
 
-void log_message(LogLevel level, const char* message, ...) {
+void log_message(LogLevel level, const char* message, ...) 
+{
     va_list args;
     va_start(args, message);
 
@@ -42,7 +45,8 @@ void log_message(LogLevel level, const char* message, ...) {
             break;
     }
 
-    vfprintf(log_file, message, args);
+    // FIXME
+    // vfprintf(log_file, message, args);
 
     pthread_mutex_unlock(&logLock);
 

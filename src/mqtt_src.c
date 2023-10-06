@@ -18,6 +18,7 @@
 #include "mqtt_src.h"
 #include "squeue.h"
 #include "error.h"
+#include "logger.h"
 
 //FIXME
 extern char* strdup(const char*);
@@ -34,9 +35,10 @@ volatile int connected = 0;
  * @param context 
  * @param dt 
  */
-static void delivered(void* context, MQTTClient_deliveryToken dt) {
+static void delivered(void* context, MQTTClient_deliveryToken dt) 
+{
     #ifdef DEBUG
-    printf("Message with token value %d delivery confirmed\n", dt);
+    log_message(LOG_INFO, "Message with token value %d delivery confirmed\n", dt);
     #endif // DEBUG   
 
     deliveredtoken = dt;
@@ -61,7 +63,7 @@ static int msgarrvd(void* context, char* topicName, int topicLen, MQTTClient_mes
         Queue *q = (Queue*) context;
         
         #ifdef DEBUG
-        printf("Received message at tpoic %s: %s\n", topicName, (char*) message->payload);
+        log_message(LOG_INFO, "Received message at tpoic %s: %s\n", topicName, (char*) message->payload);
         #endif // DEBUG    
 
         // send to queue
@@ -83,7 +85,7 @@ static int msgarrvd(void* context, char* topicName, int topicLen, MQTTClient_mes
  */
 static void connectionLost(void* context, char* cause) {
     #ifdef DEBUG
-    printf("Connection lost, cause: %s\n", cause);
+    log_message(LOG_WARNING, "MQTTSource Connection lost, cause: %s\n", cause);
     #endif // DEBUG
     
     connected = 0;
@@ -95,7 +97,8 @@ static void connectionLost(void* context, char* cause) {
  * @param arg 
  * @return void* 
  */
-static void* mqtt_source_reader_task(void* arg) {
+static void* mqtt_source_reader_task(void* arg) 
+{
     mqtt_source_config* cfg = (mqtt_source_config*) arg;
 
     MQTTClient client;    
@@ -106,16 +109,17 @@ static void* mqtt_source_reader_task(void* arg) {
     char mqtt_addr[256];
     sprintf(mqtt_addr, "tcp://%s:%d", cfg->host, cfg->port);
     #ifdef DEBUG
-    printf("connect to %s, client_id = %s\n", mqtt_addr, cfg->client_id); 
+    log_message(LOG_INFO, "connect to %s, client_id = %s\n", mqtt_addr, cfg->client_id); 
     #endif // DEBUG
 
  
-    while (1) {
+    while (1) 
+    {
         MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer; 
 
         if ( (rc = MQTTClient_create(&client, mqtt_addr, (const char*) cfg->client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS)
         {
-            printf("Create Client-source Error, error code: %d\n", rc);
+            log_message(LOG_ERROR, "Create Client-source Error, error code: %d\n", rc);
             exit(ESVRERR);
         }
 
@@ -136,7 +140,7 @@ static void* mqtt_source_reader_task(void* arg) {
         {
 
             #ifdef DEBUG
-            printf("Failed to connect to source, return code %d. Retrying...\n", rc);
+            log_message(LOG_ERROR, "Failed to connect to source, return code %d. Retrying...\n", rc);
             #endif // DEBUG
             
             sleep(5); // Wait for a while before retrying

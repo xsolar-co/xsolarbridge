@@ -15,6 +15,7 @@
 #include <mosquitto.h>
 #include "mosq_src.h"
 #include "error.h"
+#include "logger.h"
 
 //FIXME
 extern char* strdup(const char*);

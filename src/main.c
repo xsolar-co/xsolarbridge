@@ -155,6 +155,31 @@ int mqtt_source_task_cleanup()
 }
 #endif
 
+
+int int_logger_subsystem()
+{
+    config_setting_t* logger = config_lookup(&cfg, "logger");
+
+    if (logger != NULL) 
+    {
+        char* logger_file = (char*)read_string_setting(logger, "logfile", "/tmp/logfile.log");
+        int port = read_int_setting(logger, "syslog", 0);
+
+        printf("logger file: %s\n", logger_file);
+
+        // loadConfig(config_file);
+        init_logger(logger_file);
+
+
+
+    } else {
+        fprintf(stderr, "The 'logger' subsetting is missing.\n");
+        return -1;
+    }   
+
+    return 0;
+}
+
 int main(int argc, char* argv[]) {
     int daemonize_flag = 0;
     char *config_file = NULL;
@@ -192,8 +217,14 @@ int main(int argc, char* argv[]) {
         daemonize();
     }
 
-    // loadConfig(config_file);
-    init_logger("logfile.log");
+    // init logger system
+    if (0 != int_logger_subsystem())
+    {
+        fprintf(stderr, "Init logger system error\n");
+
+        return 1;
+    }
+
 
      // mqtt target task
     log_message(LOG_INFO, "Init MQTT send task\n");

@@ -21,6 +21,7 @@
 #include "MQTTClient.h"
 #include "error.h"
 #include "datalog.h"
+#include "logger.h"
 
 //FIXME
 extern char* strdup(const char*);
@@ -37,7 +38,7 @@ volatile int _connected = 0;
 static void connectionLost(void* context, char* cause) 
 {
     #ifdef DEBUG
-    printf("Connection lost, cause: %s\n", cause);
+    log_message(LOG_WARNING, "Connection lost, cause: %s\n", cause);
     #endif // DEBUG
     
     _connected = 0;
@@ -50,9 +51,10 @@ volatile MQTTClient_deliveryToken _deliveredtoken;
  * @param context 
  * @param dt 
  */
-static void delivered(void* context, MQTTClient_deliveryToken dt) {
+static void delivered(void* context, MQTTClient_deliveryToken dt) 
+{
     #ifdef DEBUG
-    printf("Message with token value %d delivery confirmed\n", dt);
+    log_message(LOG_INFO, "Message with token value %d delivery confirmed\n", dt);
     #endif // DEBUG   
 
     _deliveredtoken = dt;
@@ -70,7 +72,7 @@ void* mqtt_sink_task(void* arg) {
     if (cfg == NULL)
     {
         #ifdef DEBUG
-        printf("Error queue...\n");
+        log_message(LOG_ERROR, "Error config...\n");
         #endif // DEBUG
         
         exit(ESYSERR);
@@ -81,7 +83,7 @@ void* mqtt_sink_task(void* arg) {
     if (q == NULL)
     {
         #ifdef DEBUG
-        printf("Error queue...\n");
+        log_message(LOG_ERROR, "Error queue...\n");
         #endif // DEBUG
         
         exit(EQUERR);
@@ -89,8 +91,10 @@ void* mqtt_sink_task(void* arg) {
 
     char mqtt_addr[256];
     sprintf(mqtt_addr, "tcp://%s:%d", cfg->host, cfg->port);
+    
     #ifdef DEBUG
     printf("sink connect to %s\n", mqtt_addr);
+    log_message(LOG_INFO, "sink connect to %s\n", mqtt_addr);
     #endif // DEBUG
 
     while(1)
@@ -101,7 +105,7 @@ void* mqtt_sink_task(void* arg) {
         
         if (MQTTCLIENT_SUCCESS != (rc = MQTTClient_create(&client, mqtt_addr, cfg->client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL)))
         {
-            printf("Create ClientSink Error, code = %d\n", rc);
+            log_message(LOG_ERROR, "Create ClientSink Error, code = %d\n", rc);
             exit(ESVRERR);
         }
             
@@ -123,13 +127,14 @@ void* mqtt_sink_task(void* arg) {
         if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS) 
         {
             #ifdef DEBUG
-            printf("Failed to connect to sink, return code %d, %s retrying ...\n", rc, MQTTClient_strerror(rc));
+            log_message(LOG_ERROR, "Failed to connect to sink, return code %d, %s retrying ...\n", rc, MQTTClient_strerror(rc));
             #endif
 
             MQTTClient_destroy(&client);
 
-            sleep(1);
+            sleep(5);
 
+            // exit and retry connect
             continue;
         }
 
@@ -156,14 +161,15 @@ void* mqtt_sink_task(void* arg) {
                 sprintf(target_topic, "%s", data->source_topic);
 
                 #ifdef DEBUG
-                printf("publish to %s: %s, len = %d\n", target_topic, (char*) pubmsg.payload, pubmsg.payloadlen);
+                log_message(LOG_INFO, "publish to %s: %s, len = %d\n", target_topic, (char*) pubmsg.payload, pubmsg.payloadlen);
                 #endif // DEBUG
 
                 rc = MQTTClient_publishMessage(client, target_topic, &pubmsg, &token);
                 #ifdef DEBUG
-                printf("RC code =%d, Token %d\n", rc, token);
+                log_message(LOG_INFO, "RC code =%d, Token %d\n", rc, token);
                 #endif // DEBUG
 
+                // wait or not ?
                 // MQTTClient_waitForCompletion(client, token, 1000);
 
                 free_message(data);
