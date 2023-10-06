@@ -109,7 +109,7 @@ static void* mqtt_source_reader_task(void* arg)
     char mqtt_addr[256];
     sprintf(mqtt_addr, "tcp://%s:%d", cfg->host, cfg->port);
     #ifdef DEBUG
-    log_message(LOG_INFO, "connect to %s, client_id = %s\n", mqtt_addr, cfg->client_id); 
+    // log_message(LOG_INFO, "connect to %s, client_id = %s\n", mqtt_addr, cfg->client_id); 
     #endif // DEBUG
 
  
@@ -119,7 +119,7 @@ static void* mqtt_source_reader_task(void* arg)
 
         if ( (rc = MQTTClient_create(&client, mqtt_addr, (const char*) cfg->client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS)
         {
-            log_message(LOG_ERROR, "Create Client-source Error, error code: %d\n", rc);
+            log_message(LOG_PERROR, "Create Client-source Error, error code: %d\n", rc);
             exit(ESVRERR);
         }
 
@@ -140,7 +140,7 @@ static void* mqtt_source_reader_task(void* arg)
         {
 
             #ifdef DEBUG
-            log_message(LOG_ERROR, "Failed to connect to source, return code %d. Retrying...\n", rc);
+            log_message(LOG_PERROR, "Failed to connect to source, return code %d. Retrying...\n", rc);
             #endif // DEBUG
             
             sleep(5); // Wait for a while before retrying

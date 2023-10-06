@@ -10,6 +10,7 @@
  */
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -163,12 +164,12 @@ int int_logger_subsystem()
     if (logger != NULL) 
     {
         char* logger_file = (char*)read_string_setting(logger, "logfile", "/tmp/logfile.log");
-        int port = read_int_setting(logger, "syslog", 0);
+        int use_syslog = read_int_setting(logger, "syslog", 0);
 
         printf("logger file: %s\n", logger_file);
 
         // loadConfig(config_file);
-        init_logger(logger_file);
+        init_logger(logger_file, (int8_t) use_syslog);
 
 
 
@@ -201,7 +202,7 @@ int main(int argc, char* argv[]) {
 
     if (config_file == NULL) {
         printf("Error: Missing config file. Use -c option to specify a config file.\n");
-        config_file = "../etc/brconfigst.cfg";
+        config_file = "./etc/brconfig.cfg";
     }
 
     config_init(&cfg);

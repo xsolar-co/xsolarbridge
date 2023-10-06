@@ -72,7 +72,7 @@ void* mqtt_sink_task(void* arg) {
     if (cfg == NULL)
     {
         #ifdef DEBUG
-        log_message(LOG_ERROR, "Error config...\n");
+        log_message(LOG_PERROR, "Error config...\n");
         #endif // DEBUG
         
         exit(ESYSERR);
@@ -83,7 +83,7 @@ void* mqtt_sink_task(void* arg) {
     if (q == NULL)
     {
         #ifdef DEBUG
-        log_message(LOG_ERROR, "Error queue...\n");
+        log_message(LOG_PERROR, "Error queue...\n");
         #endif // DEBUG
         
         exit(EQUERR);
@@ -93,8 +93,7 @@ void* mqtt_sink_task(void* arg) {
     sprintf(mqtt_addr, "tcp://%s:%d", cfg->host, cfg->port);
     
     #ifdef DEBUG
-    printf("sink connect to %s\n", mqtt_addr);
-    log_message(LOG_INFO, "sink connect to %s\n", mqtt_addr);
+    // log_message(LOG_INFO, "sink connect to %s\n", mqtt_addr);
     #endif // DEBUG
 
     while(1)
@@ -105,7 +104,7 @@ void* mqtt_sink_task(void* arg) {
         
         if (MQTTCLIENT_SUCCESS != (rc = MQTTClient_create(&client, mqtt_addr, cfg->client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL)))
         {
-            log_message(LOG_ERROR, "Create ClientSink Error, code = %d\n", rc);
+            log_message(LOG_PERROR, "Create ClientSink Error, code = %d\n", rc);
             exit(ESVRERR);
         }
             
@@ -127,7 +126,7 @@ void* mqtt_sink_task(void* arg) {
         if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS) 
         {
             #ifdef DEBUG
-            log_message(LOG_ERROR, "Failed to connect to sink, return code %d, %s retrying ...\n", rc, MQTTClient_strerror(rc));
+            log_message(LOG_PERROR, "Failed to connect to sink, return code %d, %s retrying ...\n", rc, MQTTClient_strerror(rc));
             #endif
 
             MQTTClient_destroy(&client);
