@@ -172,7 +172,10 @@ void* mqtt_sink_task(void* arg) {
                 // MQTTClient_waitForCompletion(client, token, 1000);
 
                 free_message(data);
-            }
+
+if ((rc !=0) || (_connected == 0)) break;
+
+           }
         }
 
         // connect fail, reconnect
