@@ -17,7 +17,9 @@
 #include <unistd.h>
 #include <time.h>
 
+#include "datalog.h"
 #include "error.h"
+#include "logger.h"
 #include "mosq_sink.h"
 
 //FIXME
@@ -62,18 +64,24 @@ static void on_disconnect(struct mosquitto *mosq, void *obj, int rc)
 }
 
 /**
- * @brief 
+ * @brief send data to mqtt server
  * 
  * @param mosq 
  * @param topic 
  * @param message 
+ * @param data_len 
+ * @return int 
  */
-static void send_to_mqtt(struct mosquitto *mosq, const char* topic, const char* message) 
+static int send_to_mqtt(struct mosquitto *mosq, const char* topic, void* message, int data_len) 
 {
-    int rc = mosquitto_publish(mosq, NULL, topic, strlen(message), message, 0, false);
-    if (rc != MOSQ_ERR_SUCCESS) {
+    int rc = mosquitto_publish(mosq, NULL, topic, data_len, message, 0, false);
+    
+    if (rc != MOSQ_ERR_SUCCESS) 
+    {
         fprintf(stderr, "Unable to publish (%d): %s\n", rc, mosquitto_strerror(rc));
     }
+
+    return rc;
 }
 
 /**
@@ -94,9 +102,8 @@ void* mosq_sink_task(void* arg)
         exit(-1);
     }
 
+    // get queue 
     Queue* q = (Queue*) cfg->q;
-    char data[MAX_QUEUE_DATA_SIZE];
-
     if (q == NULL)
     {
         #ifdef DEBUG
@@ -134,14 +141,15 @@ void* mosq_sink_task(void* arg)
 
     while (1) 
     {
-        if (wait_dequeue(q, data))
+        struct Message* data;
+        if (wait_dequeue(q, (void**) &data))
         {
             #ifdef DEBUG
-            printf("%s\n", data);
+            // printf("%s\n", data);
             #endif // DEBUG
 
             // Publish to MQTT broker and topic
-            send_to_mqtt(mosq, cfg->topic, data);
+            send_to_mqtt(mosq, data->source_topic, data->data, data->datalen);
 
         }
     }

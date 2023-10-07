@@ -173,7 +173,8 @@ void* mqtt_sink_task(void* arg) {
 
                 free_message(data);
 
-if ((rc !=0) || (_connected == 0)) break;
+                // check disconnect here
+                if ((rc !=0) || (_connected == 0)) break;
 
            }
         }
