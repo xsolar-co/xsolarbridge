@@ -38,7 +38,7 @@ volatile int _connected = 0;
 static void connectionLost(void* context, char* cause) 
 {
     #ifdef DEBUG
-    log_message(LOG_WARNING, "Connection lost, cause: %s\n", cause);
+    log_message(LOG_WARNING, "Sink Connection lost, cause: %s\n", cause);
     #endif // DEBUG
     
     _connected = 0;

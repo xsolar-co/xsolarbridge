@@ -142,6 +142,9 @@ static void* mqtt_source_reader_task(void* arg)
             #ifdef DEBUG
             log_message(LOG_PERROR, "Failed to connect to source, return code %d. Retrying...\n", rc);
             #endif // DEBUG
+
+            // destroy client
+            MQTTClient_destroy(&client);
             
             sleep(5); // Wait for a while before retrying
 

@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
 
     if (config_file == NULL) {
         printf("Error: Missing config file. Use -c option to specify a config file.\n");
-        config_file = "./etc/brconfig.cfg";
+        config_file = "../etc/brconfig.cfg";
     }
 
     config_init(&cfg);
