@@ -105,16 +105,7 @@ int main(int argc, char* argv[]) {
 
 
     // 
-    // mqtt source task
-    log_message(LOG_INFO, "Init MQTT source reader task\n");
-    mqtt_source_task_init(&cfg);
-
-     // mqtt target task
-    log_message(LOG_INFO, "Init MQTT send task\n");
-    mqtt_sink_task_init(&cfg);
-  
-    sleep(1);
-    
+    mqtt_bridge_task_init(&cfg);
     
 
     while (1) {
@@ -122,8 +113,7 @@ int main(int argc, char* argv[]) {
     }
 
     cleanup_logger();
-    mqtt_source_task_cleanup();
-    mqtt_sink_task_cleanup();
+    mqtt_bridge_task_cleanup();
 
     config_destroy(&cfg);
 

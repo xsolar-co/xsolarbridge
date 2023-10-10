@@ -138,3 +138,36 @@ int mqtt_source_task_cleanup()
     return 0;
 }
 #endif
+
+
+/**
+ * @brief init bridge task
+ * 
+ * @param cfg 
+ * @return int 
+ */
+int mqtt_bridge_task_init(config_t* cfg)
+{
+    // mqtt source task
+    log_message(LOG_INFO, "Init MQTT source reader task\n");
+    mqtt_source_task_init(cfg);
+
+     // mqtt target task
+    log_message(LOG_INFO, "Init MQTT send task\n");
+    mqtt_sink_task_init(cfg);
+  
+     return ENOERR;
+}
+
+/**
+ * @brief Cleanup memory
+ * 
+ * @return int 
+ */
+int mqtt_bridge_task_cleanup()
+{
+    mqtt_source_task_cleanup();
+    mqtt_sink_task_cleanup();
+
+    return ENOERR;
+}

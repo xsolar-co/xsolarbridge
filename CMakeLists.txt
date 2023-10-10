@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.0)
 option(CROSS_COMPILE_ARM64 "Cross compile for ARM64" OFF)
 option(MOSQUITTO "mosquitto src-sink support" OFF)
 option(PAHO "paho.mqtt.c src-sink support" ON)
-
+option(MQTTC "mqtt.c src-sink support" OFF)
 
 if(CROSS_COMPILE_ARM64)
     message("Cross-compiling for ARM64")
@@ -59,6 +59,17 @@ if(PAHO)
     list(APPEND LINK_LIBRARIES paho-mqtt3c)
 else()
     message("PAHO-mqtt flag is not defined!")
+endif()
+
+if(MQTTC)
+    message("PAHO-mqtt flag is defined.")
+    add_definitions(-DMQTTC)
+    list(APPEND SOURCES src/mqttc_sink.c)
+    list(APPEND SOURCES src/mqttc_src.c)
+    list(APPEND SOURCES src/mqttc_bridge.c)
+    list(APPEND LINK_LIBRARIES mqttc)
+else()
+    message("MQTTC flag is not defined!")
 endif()
 
 # Create an executable from the sources
