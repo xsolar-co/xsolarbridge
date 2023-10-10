@@ -158,6 +158,10 @@ static void* mqtt_source_reader_task(void* arg)
             sleep(1); // Sleep for a short period to avoid busy-waiting
         }
 
+        #ifdef DEBUG
+        log_message(LOG_INFO, "Source module - Disconnect & distroy current client and reconnect!");
+        #endif // DEBUG
+
         MQTTClient_disconnect(client, 10000);
         MQTTClient_destroy(&client);
     }

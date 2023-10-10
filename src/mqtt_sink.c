@@ -180,6 +180,10 @@ void* mqtt_sink_task(void* arg) {
         }
 
         // connect fail, reconnect
+        #ifdef DEBUG
+        log_message(LOG_INFO, "Sink module - Disconnect & distroy current client and reconnect!");
+        #endif // DEBUG
+
         MQTTClient_disconnect(client, 10000);
         MQTTClient_destroy(&client);
     }
