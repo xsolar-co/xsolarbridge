@@ -45,7 +45,7 @@ static void* mqttc_source_reader_task(void* arg)
     char mqttc_addr[256];
     sprintf(mqttc_addr, "tcp://%s:%d", cfg->host, cfg->port);
     #ifdef DEBUG
-    // log_message(LOG_INFO, "connect to %s, client_id = %s\n", mqttc_addr, cfg->client_id); 
+    log_message(LOG_INFO, "connect to %s, client_id = %s\n", mqttc_addr, cfg->client_id); 
     #endif // DEBUG
 
  

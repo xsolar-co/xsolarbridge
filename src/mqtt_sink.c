@@ -144,7 +144,8 @@ void* mqtt_sink_task(void* arg) {
         {
             struct Message* data;
 
-            if (wait_dequeue(q, (void**) &data))
+            // FIXME if (wait_dequeue(q, (void**) &data))
+            if (0 != dequeue(q, (void**) &data))
             {
                 MQTTClient_message pubmsg = MQTTClient_message_initializer;
                 MQTTClient_deliveryToken token;
@@ -176,6 +177,10 @@ void* mqtt_sink_task(void* arg) {
                 // check disconnect here
                 if ((rc !=0) || (_connected == 0)) break;
 
+           }
+           else
+           {
+                usleep(1000);
            }
         }
 

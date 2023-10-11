@@ -39,6 +39,13 @@ void enqueue(Queue* q, void* data) {
     pthread_mutex_unlock(&q->lock);
 }
 
+/**
+ * @brief 
+ * 
+ * @param q 
+ * @param data 
+ * @return int 
+ */
 int dequeue(Queue* q, void** data) 
 {
     pthread_mutex_lock(&q->lock);
@@ -66,6 +73,13 @@ int dequeue(Queue* q, void** data)
     return ret;
 }
 
+/**
+ * @brief FIXME later
+ * 
+ * @param q 
+ * @param data 
+ * @return int 
+ */
 int wait_dequeue(Queue* q, void** data) 
 {
     pthread_mutex_lock(&q->lock);
