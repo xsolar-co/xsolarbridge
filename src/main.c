@@ -26,7 +26,14 @@
 #include "logger.h"
 #include "squeue.h"
 #include "datalog.h"
+
+#ifdef PAHO
 #include "mqtt_bridge.h"
+#endif
+
+#ifdef MOSQUITTO
+#include "mosq_bridge.h"
+#endif
 
 static void daemonize();
 
@@ -79,7 +86,7 @@ int main(int argc, char* argv[]) {
 
     if (config_file == NULL) {
         printf("Error: Missing config file. Use -c option to specify a config file.\n");
-        config_file = "../etc/brconfig.cfg";
+        config_file = "../etc/brconfigstd.cfg";
     }
 
     config_init(&cfg);
@@ -105,15 +112,27 @@ int main(int argc, char* argv[]) {
 
 
     // 
+#ifdef PAHO    
     mqtt_bridge_task_init(&cfg);
-    
+#endif    
+
+#ifdef MOSQUITTO
+    mosq_bridge_task_init(&cfg);
+#endif    
 
     while (1) {
         sleep(1);
     }
 
     cleanup_logger();
+
+#ifdef PAHO    
     mqtt_bridge_task_cleanup();
+#endif
+
+#ifdef MOSQUITTO
+    mosq_bridge_task_cleanup();
+#endif
 
     config_destroy(&cfg);
 

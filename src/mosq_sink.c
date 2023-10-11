@@ -27,6 +27,8 @@ extern char* strdup(const char*);
 
 #define DEBUG
 
+volatile int _connected;
+
 /**
  * @brief connect callback
  * 
@@ -36,9 +38,14 @@ extern char* strdup(const char*);
  */
 static void on_connect(struct mosquitto *mosq, void *obj, int rc) 
 {
-    if (rc == 0) {
-        printf("Connected successfully\n");
-    } else {
+    _connected = 1;
+
+    if (rc == 0) 
+    {
+        printf("Sink: Connected successfully\n");        
+    } 
+    else 
+    {
         fprintf(stderr, "Connect failed: %s\n", mosquitto_strerror(rc));
     }
 }
@@ -52,6 +59,8 @@ static void on_connect(struct mosquitto *mosq, void *obj, int rc)
  */
 static void on_disconnect(struct mosquitto *mosq, void *obj, int rc) 
 {
+    _connected = 0;
+
     if (rc == MOSQ_ERR_SUCCESS) 
     {
         printf("Disconnecting gracefully...\n");
@@ -131,6 +140,11 @@ void* mosq_sink_task(void* arg)
     mosquitto_connect_callback_set(mosq, on_connect);
     mosquitto_disconnect_callback_set(mosq, on_disconnect);
 
+    if (cfg->username != NULL)
+        mosquitto_username_pw_set(mosq, cfg->username, cfg->password);
+
+    _connected = 0;
+
     // Connect to MQTT broker
     rc = mosquitto_connect(mosq, cfg->host, cfg->port, 60);
     if (rc != MOSQ_ERR_SUCCESS) 
@@ -139,10 +153,22 @@ void* mosq_sink_task(void* arg)
         exit(ESVRERR);
     }
 
+    rc = mosquitto_loop_start(mosq);
+	if(rc != MOSQ_ERR_SUCCESS)
+    {
+		mosquitto_destroy(mosq);
+		fprintf(stderr, "Error: %s\n", mosquitto_strerror(rc));
+		
+        exit(ESVRERR);
+	}
+
+    while (!_connected)
+        usleep(10000);
+
     while (1) 
     {
         struct Message* data;
-        if (wait_dequeue(q, (void**) &data))
+        if (0 != dequeue(q, (void**) &data))
         {
             #ifdef DEBUG
             // printf("%s\n", data);
@@ -151,6 +177,10 @@ void* mosq_sink_task(void* arg)
             // Publish to MQTT broker and topic
             send_to_mqtt(mosq, data->source_topic, data->data, data->datalen);
 
+        }
+        else
+        {
+            usleep(10000);
         }
     }
 

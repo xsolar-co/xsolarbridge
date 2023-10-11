@@ -2,8 +2,8 @@
 cmake_minimum_required(VERSION 3.0)
 
 option(CROSS_COMPILE_ARM64 "Cross compile for ARM64" OFF)
-option(MOSQUITTO "mosquitto src-sink support" OFF)
-option(PAHO "paho.mqtt.c src-sink support" ON)
+option(MOSQUITTO "mosquitto src-sink support" ON)
+option(PAHO "paho.mqtt.c src-sink support" OFF)
 option(MQTTC "mqtt.c src-sink support" OFF)
 
 if(CROSS_COMPILE_ARM64)
@@ -45,6 +45,7 @@ if(MOSQUITTO)
     add_definitions(-DMOSQUITTO)
     list(APPEND SOURCES src/mosq_sink.c)
     list(APPEND SOURCES src/mosq_src.c)
+    list(APPEND SOURCES src/mosq_bridge.c)
     list(APPEND LINK_LIBRARIES mosquitto)
 else()
     message("MOSQUITTO flag is not defined!")

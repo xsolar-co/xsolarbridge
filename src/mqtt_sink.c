@@ -180,7 +180,7 @@ void* mqtt_sink_task(void* arg) {
            }
            else
            {
-                usleep(1000);
+                usleep(10000);
            }
         }
 

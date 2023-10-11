@@ -17,6 +17,7 @@
 #include "error.h"
 #include "logger.h"
 #include "squeue.h"
+#include "datalog.h"
 
 //FIXME
 extern char* strdup(const char*);
@@ -63,7 +64,7 @@ static void on_connect(struct mosquitto *mosq, void *obj, int rc)
     {
         mosq_source_config* cfg = (mosq_source_config*) obj;
 
-        printf("Connected successfully\n");
+        printf("Source: Connected successfully\n");
         // Subscribe to the desired topic after successful connection
         mosquitto_subscribe(mosq, NULL, cfg->topic, 0);
 
@@ -105,7 +106,7 @@ static void* mosq_source_reader_task(void* arg)
     mosq_source_config* cfg = (mosq_source_config*) arg;
     
     // Initialize mosquitto library
-    mosquitto_lib_init();
+    // mosquitto_lib_init();
 
     struct mosquitto *mosq = NULL;
     int rc;
@@ -122,6 +123,10 @@ static void* mosq_source_reader_task(void* arg)
     mosquitto_message_callback_set(mosq, on_message);
     mosquitto_connect_callback_set(mosq, on_connect);
     mosquitto_disconnect_callback_set(mosq, on_disconnect);
+
+    if (cfg->username != NULL)
+        mosquitto_username_pw_set(mosq, cfg->username, cfg->password);
+
 
     // Connect to MQTT broker
     rc = mosquitto_connect(mosq, cfg->host, cfg->port, 60);
