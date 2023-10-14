@@ -39,12 +39,12 @@ int mqtt_sink_task_init(config_t* cfg)
         char* clientid = (char*)read_string_setting(mqtt_src, "clientid", "sinktaskcli-01");
         char* topic = (char*)read_string_setting(mqtt_src, "topic", "lxd/BA31605780");
 
-        printf("Host: %s\n", host);
-        printf("Port: %d\n", port);
-        printf("Username: %s\n", username);
-        printf("Password: %s\n", password);
-        printf("Client ID: %s\n", clientid);
-        printf("Topic: %s\n", topic);
+        // printf("Host: %s\n", host);
+        // printf("Port: %d\n", port);
+        // printf("Username: %s\n", username);
+        // printf("Password: %s\n", password);
+        // printf("Client ID: %s\n", clientid);
+        // printf("Topic: %s\n", topic);
 
         mqtt_sink_init(&mqtt_sink_conf, &mqtt_sink_queue, host, port, username, password, clientid, topic);
         mqtt_sink_run(&mqtt_sink_conf);
@@ -93,12 +93,12 @@ int mqtt_source_task_init(config_t* cfg)
         char* clientid = (char*)read_string_setting(mqtt_src, "clientid", "sourcetaskcli-01");
         char* topic = (char*)read_string_setting(mqtt_src, "topic", "lxp/BA31605780");
 
-        printf("Host: %s\n", host);
-        printf("Port: %d\n", port);
-        printf("Username: %s\n", username);
-        printf("Password: %s\n", password);
-        printf("Client ID: %s\n", clientid);
-        printf("Topic: %s\n", topic);
+        // printf("Host: %s\n", host);
+        // printf("Port: %d\n", port);
+        // printf("Username: %s\n", username);
+        // printf("Password: %s\n", password);
+        // printf("Client ID: %s\n", clientid);
+        // printf("Topic: %s\n", topic);
 
         // init queue
         init_queue(&mqtt_sink_queue);

@@ -42,11 +42,11 @@ static void on_connect(struct mosquitto *mosq, void *obj, int rc)
 
     if (rc == 0) 
     {
-        printf("Sink: Connected successfully\n");        
+        log_message(LOG_INFO, "Sink: Connected successfully\n");        
     } 
     else 
     {
-        fprintf(stderr, "Connect failed: %s\n", mosquitto_strerror(rc));
+        log_message(LOG_ERR, "Connect failed: %s\n", mosquitto_strerror(rc));
     }
 }
 
@@ -63,11 +63,11 @@ static void on_disconnect(struct mosquitto *mosq, void *obj, int rc)
 
     if (rc == MOSQ_ERR_SUCCESS) 
     {
-        printf("Disconnecting gracefully...\n");
+        log_message(LOG_INFO, "Disconnecting gracefully...\n");
     } 
     else 
     {
-        printf("Disconnected unexpectedly, will try to reconnect...\n");
+        log_message(LOG_ERR, "Disconnected unexpectedly, will try to reconnect...\n");
         mosquitto_reconnect(mosq);
     }
 }
@@ -87,7 +87,7 @@ static int send_to_mqtt(struct mosquitto *mosq, const char* topic, void* message
     
     if (rc != MOSQ_ERR_SUCCESS) 
     {
-        fprintf(stderr, "Unable to publish (%d): %s\n", rc, mosquitto_strerror(rc));
+        log_message(LOG_ERR, "Unable to publish (%d): %s\n", rc, mosquitto_strerror(rc));
     }
 
     return rc;
@@ -105,10 +105,10 @@ void* mosq_sink_task(void* arg)
     if (cfg == NULL)
     {
         #ifdef DEBUG
-        printf("Error queue...\n");
+        log_message(LOG_ERR, "Error queue...\n");
         #endif // DEBUG
         
-        exit(-1);
+        exit(EQUERR);
     }
 
     // get queue 
@@ -116,7 +116,7 @@ void* mosq_sink_task(void* arg)
     if (q == NULL)
     {
         #ifdef DEBUG
-        printf("Error queue...\n");
+        log_message(LOG_ERR, "Error queue...\n");
         #endif // DEBUG
         
         exit(EQUERR);
@@ -132,7 +132,7 @@ void* mosq_sink_task(void* arg)
     mosq = mosquitto_new(NULL, true, NULL);
     if (!mosq) 
     {
-        fprintf(stderr, "Error: Out of memory.\n");
+        log_message(LOG_ERR, "Error: Out of memory.\n");
         exit(ESYSERR);
     }
 
@@ -149,7 +149,7 @@ void* mosq_sink_task(void* arg)
     rc = mosquitto_connect(mosq, cfg->host, cfg->port, 60);
     if (rc != MOSQ_ERR_SUCCESS) 
     {
-        fprintf(stderr, "Unable to connect (%d): %s\n", rc, mosquitto_strerror(rc));
+        log_message(LOG_ERR, "Unable to connect (%d): %s\n", rc, mosquitto_strerror(rc));
         exit(ESVRERR);
     }
 
@@ -157,11 +157,12 @@ void* mosq_sink_task(void* arg)
 	if(rc != MOSQ_ERR_SUCCESS)
     {
 		mosquitto_destroy(mosq);
-		fprintf(stderr, "Error: %s\n", mosquitto_strerror(rc));
+		log_message(LOG_ERR, "Error: %s\n", mosquitto_strerror(rc));
 		
         exit(ESVRERR);
 	}
 
+    // wait until connected
     while (!_connected)
         usleep(10000);
 
@@ -171,7 +172,7 @@ void* mosq_sink_task(void* arg)
         if (0 != dequeue(q, (void**) &data))
         {
             #ifdef DEBUG
-            // printf("%s\n", data);
+            // log_message(LOG_INFO, "%s\n", data);
             #endif // DEBUG
 
             // Publish to MQTT broker and topic

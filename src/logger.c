@@ -69,6 +69,7 @@ void log_message(int level, const char* message, ...)
             break;
 
         case LOG_PERROR:
+        case LOG_ERR:
             fprintf(stdout, "[ERROR] ");
             vfprintf(stdout, message, args);
 

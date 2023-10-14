@@ -34,12 +34,12 @@ int mosq_sink_task_init(config_t* cfg)
         char* clientid = (char*)read_string_setting(mosq_src, "clientid", "sinktaskcli-01");
         char* topic = (char*)read_string_setting(mosq_src, "topic", "lxd/BA31605780");
 
-        printf("Host: %s\n", host);
-        printf("Port: %d\n", port);
-        printf("Username: %s\n", username);
-        printf("Password: %s\n", password);
-        printf("Client ID: %s\n", clientid);
-        printf("Topic: %s\n", topic);
+        // printf("Host: %s\n", host);
+        // printf("Port: %d\n", port);
+        // printf("Username: %s\n", username);
+        // printf("Password: %s\n", password);
+        // printf("Client ID: %s\n", clientid);
+        // printf("Topic: %s\n", topic);
 
         mosq_sink_init(&mosq_sink_conf, &mosq_sink_queue, host, port, username, password, clientid, topic);
         mosq_sink_run(&mosq_sink_conf);
@@ -75,12 +75,12 @@ int mosq_source_task_init(config_t* cfg)
         char* clientid = (char*)read_string_setting(mosq_src, "clientid", "sourcetaskcli-01");
         char* topic = (char*)read_string_setting(mosq_src, "topic", "lxp/BA31605780");
 
-        printf("Host: %s\n", host);
-        printf("Port: %d\n", port);
-        printf("Username: %s\n", username);
-        printf("Password: %s\n", password);
-        printf("Client ID: %s\n", clientid);
-        printf("Topic: %s\n", topic);
+        // printf("Host: %s\n", host);
+        // printf("Port: %d\n", port);
+        // printf("Username: %s\n", username);
+        // printf("Password: %s\n", password);
+        // printf("Client ID: %s\n", clientid);
+        // printf("Topic: %s\n", topic);
 
         // init queue
         init_queue(&mosq_sink_queue);
